@@ -16,7 +16,16 @@ const app = express();
 connectDB();
 
 // Middlewares
-app.use(cors());
+const corsOptions = {
+  origin: process.env.NODE_ENV === 'production' 
+    ? [
+        'https://trello-nippon.onrender.com',
+        process.env.FRONTEND_URL
+      ].filter(Boolean)
+    : '*',
+  credentials: true
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
