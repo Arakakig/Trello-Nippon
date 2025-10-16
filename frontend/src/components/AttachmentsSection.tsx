@@ -62,7 +62,7 @@ export default function AttachmentsSection({ task }: AttachmentsSectionProps) {
   };
 
   const handlePreview = (attachment: any) => {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+    const apiUrl = 'https://trello-nippon.onrender.com/api';
     const fileUrl = `${apiUrl.replace('/api', '')}/${attachment.path}`;
     
     if (attachment.mimetype.startsWith('image/')) {
