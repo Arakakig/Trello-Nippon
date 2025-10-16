@@ -1,0 +1,31 @@
+{
+  "name": "trello-nippon",
+  "version": "2.0.0",
+  "description": "Sistema completo de gerenciamento de tarefas estilo Trello",
+  "scripts": {
+    "install:backend": "cd backend && npm install",
+    "install:frontend": "cd frontend && npm install",
+    "install:all": "npm run install:backend && npm run install:frontend",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "build:frontend": "cd frontend && npm run build",
+    "build:all": "npm run install:all && npm run build:frontend",
+    "start": "node start.js",
+    "production": "npm run build:all && npm start",
+    "postinstall": "npm run install:backend"
+  },
+  "keywords": [
+    "trello",
+    "task-management",
+    "kanban",
+    "calendar",
+    "react",
+    "nextjs",
+    "nodejs",
+    "mongodb"
+  ],
+  "author": "",
+  "license": "MIT"
+}
+

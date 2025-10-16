@@ -1,0 +1,54 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 255, 255, 255;
+  --background-end-rgb: 255, 255, 255;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
+}
+
+@layer utilities {
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+.react-calendar {
+  @apply w-full border border-gray-200 rounded-lg shadow-sm;
+}
+
+.react-calendar__tile {
+  @apply p-3 text-sm;
+}
+
+.react-calendar__tile--active {
+  @apply bg-primary-500 text-white;
+}
+
+.react-calendar__tile--now {
+  @apply bg-primary-100;
+}
+
+.react-calendar__tile--hasActive {
+  @apply bg-primary-600;
+}
+
+.react-calendar__navigation button {
+  @apply text-lg font-semibold;
+}
+
