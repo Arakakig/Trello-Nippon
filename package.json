@@ -10,7 +10,7 @@
     "dev:frontend": "cd frontend && npm run dev",
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
     "build:frontend": "cd frontend && npm run build",
-    "build:all": "npm run install:all && npm run build:frontend",
+    "build:all": "npm run install:all",
     "start": "node start.js",
     "production": "npm run build:all && npm start",
     "postinstall": "npm run install:backend"
