@@ -49,13 +49,12 @@ router.post('/register', [
 
     console.log('✅ Usuário criado no banco de dados');
 
-    // Enviar email de verificação
+    // Enviar email de verificação (opcional - não bloqueia o cadastro)
     try {
-      const emailResult = await sendVerificationEmail(user, verificationToken);
-      console.log('📧 Resultado do envio de email:', emailResult);
+      await sendVerificationEmail(user, verificationToken);
     } catch (error) {
-      console.error('❌ Erro ao enviar email de verificação:', error);
-      // Continua mesmo se o email falhar
+      // Continua mesmo se o email falhar - sistema funciona sem email
+      console.log('ℹ️  Cadastro criado sem envio de email (normal em ambientes com SMTP bloqueado)');
     }
 
     // Gerar token JWT

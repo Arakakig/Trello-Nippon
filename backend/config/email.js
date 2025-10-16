@@ -108,8 +108,9 @@ const sendVerificationEmail = async (user, verificationToken) => {
     console.log(`📧 Email de verificação enviado para: ${user.email}`);
     return { success: true, message: 'Email enviado com sucesso' };
   } catch (error) {
-    console.error('❌ Erro ao enviar email:', error);
-    return { success: false, message: 'Erro ao enviar email', error };
+    console.warn('⚠️  Não foi possível enviar email:', error.code || error.message);
+    console.log('   O sistema continuará funcionando sem verificação de email.');
+    return { success: false, message: 'Email não enviado (SMTP bloqueado)', error };
   }
 };
 
