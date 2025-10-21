@@ -4,12 +4,12 @@ const Vendor = require('../models/Vendor');
 const User = require('../models/User');
 const auth = require('../middleware/auth');
 
-// GET /api/vendors - Buscar todos os vendedores do usuário
+// GET /api/vendors - Buscar todos os vendedores (compartilhados)
 router.get('/', auth, async (req, res) => {
   try {
     const { active } = req.query;
     
-    let query = { owner: req.user.id };
+    let query = {};
     if (active !== undefined) {
       query.active = active === 'true';
     }
@@ -27,8 +27,7 @@ router.get('/', auth, async (req, res) => {
 router.get('/:id', auth, async (req, res) => {
   try {
     const vendor = await Vendor.findOne({
-      _id: req.params.id,
-      owner: req.user.id
+      _id: req.params.id
     });
 
     if (!vendor) {
@@ -54,7 +53,7 @@ router.post('/', auth, async (req, res) => {
       name,
       email,
       phone,
-      owner: req.user.id,
+      owner: req.user.id, // Mantém o criador para auditoria
       user: existingUser ? existingUser._id : null
     });
 
@@ -82,7 +81,7 @@ router.put('/:id', auth, async (req, res) => {
     const existingUser = await User.findOne({ email: email.toLowerCase() });
 
     const vendor = await Vendor.findOneAndUpdate(
-      { _id: req.params.id, owner: req.user.id },
+      { _id: req.params.id },
       {
         name,
         email,
@@ -113,7 +112,7 @@ router.put('/:id', auth, async (req, res) => {
 // POST /api/vendors/link-users - Vincular vendedores existentes aos usuários
 router.post('/link-users', auth, async (req, res) => {
   try {
-    const vendors = await Vendor.find({ owner: req.user.id });
+    const vendors = await Vendor.find({});
     let linkedCount = 0;
 
     for (const vendor of vendors) {
@@ -142,8 +141,7 @@ router.post('/link-users', auth, async (req, res) => {
 router.delete('/:id', auth, async (req, res) => {
   try {
     const vendor = await Vendor.findOneAndDelete({
-      _id: req.params.id,
-      owner: req.user.id
+      _id: req.params.id
     });
 
     if (!vendor) {

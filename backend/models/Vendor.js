@@ -25,7 +25,7 @@ const vendorSchema = new mongoose.Schema({
   owner: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true
+    required: false // Opcional para vendedores compartilhados
   },
   // Usuário vinculado ao vendedor (para login)
   user: {
