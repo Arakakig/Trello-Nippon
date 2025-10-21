@@ -4,6 +4,7 @@ const { body, validationResult } = require('express-validator');
 const Task = require('../models/Task');
 const auth = require('../middleware/auth');
 const upload = require('../middleware/upload');
+const { parseDateFromFrontend } = require('../utils/dateUtils');
 const fs = require('fs');
 const path = require('path');
 
@@ -19,21 +20,42 @@ router.post('/', [
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { title, description, status, priority, dueDate, assignedTo, projectId } = req.body;
+    const { 
+      title, 
+      description, 
+      status, 
+      priority, 
+      dueDate, 
+      assignedTo, 
+      projectId,
+      isRecurring,
+      recurringType,
+      recurringDays,
+      recurringEndDate
+    } = req.body;
 
     const task = new Task({
       title,
       description,
       status: status || 'todo',
       priority: priority || 'medium',
-      dueDate: dueDate || null,
+      dueDate: parseDateFromFrontend(dueDate),
       assignedTo: assignedTo || [],
       project: projectId,
-      createdBy: req.userId
+      createdBy: req.userId,
+      isRecurring: Boolean(isRecurring),
+      recurringType: isRecurring ? recurringType : null,
+      recurringDays: isRecurring ? (recurringDays || []) : [],
+      recurringEndDate: isRecurring ? parseDateFromFrontend(recurringEndDate) : null
     });
 
     await task.save();
     await task.populate('createdBy assignedTo project', '-password');
+
+    // Se for uma tarefa recorrente, gerar as instâncias futuras
+    if (isRecurring && recurringType === 'weekly' && recurringDays.length > 0) {
+      await generateRecurringTasks(task);
+    }
 
     res.status(201).json(task);
   } catch (error) {
@@ -96,7 +118,7 @@ router.put('/:id', auth, async (req, res) => {
     if (description !== undefined) task.description = description;
     if (status !== undefined) task.status = status;
     if (priority !== undefined) task.priority = priority;
-    if (dueDate !== undefined) task.dueDate = dueDate;
+    if (dueDate !== undefined) task.dueDate = parseDateFromFrontend(dueDate);
     if (assignedTo !== undefined) task.assignedTo = assignedTo;
 
     await task.save();
@@ -252,6 +274,55 @@ router.get('/:id/attachments/:attachmentId/download', auth, async (req, res) => 
     res.status(500).json({ message: 'Erro ao fazer download do arquivo' });
   }
 });
+
+// Função para gerar tarefas recorrentes
+async function generateRecurringTasks(parentTask) {
+  try {
+    const { recurringDays, recurringEndDate, dueDate } = parentTask;
+    const endDate = recurringEndDate || new Date(Date.now() + 90 * 24 * 60 * 60 * 1000); // 90 dias se não especificado
+    const startDate = dueDate ? new Date(dueDate) : new Date();
+    
+    const tasks = [];
+    const currentDate = new Date(startDate);
+    
+    // Gerar tarefas para as próximas 12 semanas
+    for (let week = 0; week < 12; week++) {
+      for (const dayOfWeek of recurringDays) {
+        const taskDate = new Date(currentDate);
+        taskDate.setDate(currentDate.getDate() + (dayOfWeek - currentDate.getDay()) + (week * 7));
+        
+        // Verificar se a data não passou do limite
+        if (taskDate > endDate) break;
+        
+        // Verificar se a data não é no passado
+        if (taskDate < new Date()) continue;
+        
+        // Criar nova tarefa
+        const recurringTask = new Task({
+          title: parentTask.title,
+          description: parentTask.description,
+          status: 'todo',
+          priority: parentTask.priority,
+          dueDate: taskDate,
+          assignedTo: parentTask.assignedTo,
+          project: parentTask.project,
+          createdBy: parentTask.createdBy,
+          isRecurring: false, // Esta é uma instância específica
+          parentTask: parentTask._id
+        });
+        
+        tasks.push(recurringTask);
+      }
+    }
+    
+    if (tasks.length > 0) {
+      await Task.insertMany(tasks);
+      console.log(`Geradas ${tasks.length} tarefas recorrentes para a tarefa ${parentTask._id}`);
+    }
+  } catch (error) {
+    console.error('Erro ao gerar tarefas recorrentes:', error);
+  }
+}
 
 module.exports = router;
 

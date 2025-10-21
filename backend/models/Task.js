@@ -75,6 +75,30 @@ const taskSchema = new mongoose.Schema({
   order: {
     type: Number,
     default: 0
+  },
+  // Campos para tarefas recorrentes
+  isRecurring: {
+    type: Boolean,
+    default: false
+  },
+  recurringType: {
+    type: String,
+    enum: ['weekly', 'monthly', 'yearly'],
+    default: null
+  },
+  recurringDays: [{
+    type: Number, // 0 = Domingo, 1 = Segunda, etc.
+    min: 0,
+    max: 6
+  }],
+  recurringEndDate: {
+    type: Date,
+    default: null
+  },
+  parentTask: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Task',
+    default: null
   }
 }, {
   timestamps: true

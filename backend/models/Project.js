@@ -48,6 +48,20 @@ const projectSchema = new mongoose.Schema({
   archived: {
     type: Boolean,
     default: false
+  },
+  // Campos para projetos que representam meses
+  isMonthlyProject: {
+    type: Boolean,
+    default: false
+  },
+  projectMonth: {
+    type: String,
+    trim: true,
+    default: ''
+  },
+  projectYear: {
+    type: Number,
+    default: null
   }
 }, {
   timestamps: true
@@ -56,6 +70,7 @@ const projectSchema = new mongoose.Schema({
 // Índice para busca rápida
 projectSchema.index({ owner: 1, archived: 1 });
 projectSchema.index({ 'members.user': 1, archived: 1 });
+projectSchema.index({ owner: 1, isMonthlyProject: 1, projectMonth: 1, projectYear: 1 });
 
 // Método para verificar se um usuário é membro do projeto
 projectSchema.methods.isMember = function(userId) {

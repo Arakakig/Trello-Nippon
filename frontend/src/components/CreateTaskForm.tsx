@@ -16,6 +16,28 @@ export default function CreateTaskForm({ onClose }: CreateTaskFormProps) {
   const [priority, setPriority] = useState<'low' | 'medium' | 'high'>('medium');
   const [dueDate, setDueDate] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isRecurring, setIsRecurring] = useState(false);
+  const [recurringType, setRecurringType] = useState<'weekly' | 'monthly' | 'yearly'>('weekly');
+  const [recurringDays, setRecurringDays] = useState<number[]>([]);
+  const [recurringEndDate, setRecurringEndDate] = useState('');
+
+  const weekDays = [
+    { value: 0, label: 'Domingo' },
+    { value: 1, label: 'Segunda' },
+    { value: 2, label: 'Terça' },
+    { value: 3, label: 'Quarta' },
+    { value: 4, label: 'Quinta' },
+    { value: 5, label: 'Sexta' },
+    { value: 6, label: 'Sábado' }
+  ];
+
+  const handleDayToggle = (day: number) => {
+    setRecurringDays(prev => 
+      prev.includes(day) 
+        ? prev.filter(d => d !== day)
+        : [...prev, day]
+    );
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,6 +56,10 @@ export default function CreateTaskForm({ onClose }: CreateTaskFormProps) {
         dueDate: dueDate || null,
         status: 'todo',
         projectId: selectedProject._id,
+        isRecurring,
+        recurringType: isRecurring ? recurringType : null,
+        recurringDays: isRecurring ? recurringDays : [],
+        recurringEndDate: isRecurring && recurringEndDate ? recurringEndDate : null,
       });
       onClose();
     } catch (error) {
@@ -45,8 +71,8 @@ export default function CreateTaskForm({ onClose }: CreateTaskFormProps) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-md w-full p-6">
-        <div className="flex justify-between items-center mb-4">
+      <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] flex flex-col">
+        <div className="flex justify-between items-center p-6 pb-4 border-b border-gray-200">
           <h2 className="text-xl font-bold text-gray-900">Nova Tarefa</h2>
           <button
             onClick={onClose}
@@ -58,7 +84,8 @@ export default function CreateTaskForm({ onClose }: CreateTaskFormProps) {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="flex-1 overflow-y-auto p-6">
+          <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
               Título *
@@ -117,10 +144,84 @@ export default function CreateTaskForm({ onClose }: CreateTaskFormProps) {
             />
           </div>
 
-          <div className="flex space-x-3 pt-4">
+          {/* Opções de Recorrência */}
+          <div className="border-t pt-4">
+            <div className="flex items-center space-x-2 mb-4">
+              <input
+                type="checkbox"
+                id="isRecurring"
+                checked={isRecurring}
+                onChange={(e) => setIsRecurring(e.target.checked)}
+                className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+              />
+              <label htmlFor="isRecurring" className="text-sm font-medium text-gray-700">
+                Tarefa Recorrente
+              </label>
+            </div>
+
+            {isRecurring && (
+              <div className="space-y-4 pl-6 border-l-2 border-primary-200">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Tipo de Recorrência
+                  </label>
+                  <select
+                    value={recurringType}
+                    onChange={(e) => setRecurringType(e.target.value as any)}
+                    className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  >
+                    <option value="weekly">Semanal</option>
+                    <option value="monthly">Mensal</option>
+                    <option value="yearly">Anual</option>
+                  </select>
+                </div>
+
+                {recurringType === 'weekly' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Dias da Semana
+                    </label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {weekDays.map((day) => (
+                        <label key={day.value} className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            checked={recurringDays.includes(day.value)}
+                            onChange={() => handleDayToggle(day.value)}
+                            className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                          />
+                          <span className="text-sm text-gray-700">{day.label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div>
+                  <label htmlFor="recurringEndDate" className="block text-sm font-medium text-gray-700 mb-1">
+                    Data de Término (opcional)
+                  </label>
+                  <input
+                    id="recurringEndDate"
+                    type="date"
+                    value={recurringEndDate}
+                    onChange={(e) => setRecurringEndDate(e.target.value)}
+                    className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          </form>
+        </div>
+
+        <div className="border-t border-gray-200 p-6 pt-4">
+          <div className="flex space-x-3">
             <button
               type="submit"
               disabled={isSubmitting}
+              onClick={handleSubmit}
               className="flex-1 bg-primary-600 text-white py-2 rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? 'Criando...' : 'Criar Tarefa'}
@@ -133,7 +234,7 @@ export default function CreateTaskForm({ onClose }: CreateTaskFormProps) {
               Cancelar
             </button>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   );

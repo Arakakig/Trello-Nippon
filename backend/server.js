@@ -9,6 +9,10 @@ const authRoutes = require('./routes/auth');
 const taskRoutes = require('./routes/tasks');
 const commentRoutes = require('./routes/comments');
 const projectRoutes = require('./routes/projects');
+const clientRoutes = require('./routes/clients');
+const vendorRoutes = require('./routes/vendors');
+const analyticsRoutes = require('./routes/analytics');
+const coldListRoutes = require('./routes/coldLists');
 
 const app = express();
 
@@ -37,6 +41,10 @@ app.use('/api/auth', authRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/comments', commentRoutes);
+app.use('/api/clients', clientRoutes);
+app.use('/api/vendors', vendorRoutes);
+app.use('/api/analytics', analyticsRoutes);
+app.use('/api/cold-lists', coldListRoutes);
 
 // Rota de teste
 app.get('/api/health', (req, res) => {
